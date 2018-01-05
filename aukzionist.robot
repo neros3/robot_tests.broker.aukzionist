@@ -8,7 +8,7 @@ Library  aukzionist_service.py
 
 *** Variables ***
 
-${host}=  aukzionist.byustudio.in.ua
+${host}=  auctionist.byustudio.in.ua
 ${acceleration}=  720
 
 *** Keywords ***
@@ -141,7 +141,7 @@ Login
   Input Text  xpath=(//*[@class="document-title"])[last()]  ${title}
   Input Text  xpath=(//*[@class="document-url"])[last()]  ${vdr_url}
   Click Button  id=btn-submit-form
-  Wait Until Element Is Visible  xpath=//div[contains(@class,'alert-info')]
+  Wait Until Keyword Succeeds  10 x  1 s  Element Should Be Visible  xpath=//div[contains(@class,'alert-info')]
 
 Завантажити документ в тендер з типом
   [Arguments]  ${username}  ${tender_uaid}  ${filepath}  ${documentType}
@@ -165,7 +165,7 @@ Login
   Input Text  xpath=(//*[@class="document-title"])[last()]  ${title}
   Input Text  xpath=(//*[@class="document-url"])[last()]  ${certificate_url}
   Click Button  id=btn-submit-form
-  Wait Until Element Is Visible  xpath=//div[contains(@class,'alert-info')]
+  Wait Until Keyword Succeeds  10 x  1 s  Element Should Be Visible  xpath=//div[contains(@class,'alert-info')]
 
 Додати офлайн документ
   [Arguments]  ${username}  ${tender_uaid}  ${accessDetails}  ${title}=Familiarization with bank asset
@@ -176,7 +176,7 @@ Login
   Input Text  xpath=(//input[@class="document-access-details"])[last()]  ${accessDetails}
   Input Text  xpath=(//input[@class="document-title"])[last()]  ${title}
   Click Button  id=btn-submit-form
-  Wait Until Element Is Visible  xpath=//div[contains(@class,'alert-info')]
+  Wait Until Keyword Succeeds  10 x  1 s  Element Should Be Visible  xpath=//div[contains(@class,'alert-info')]
 
 Пошук тендера по ідентифікатору
   [Arguments]  ${username}  ${tender_uaid}
@@ -220,7 +220,6 @@ Login
   ...  ELSE  Input text  name=Tender[${field_name}]  ${field_value}
   Click Element  id=btn-submit-form
   Wait Until Element Is Visible  xpath=//div[contains(@class,'alert-success')]
-  #Wait Until Page Contains  ${field_value}  30
 
 ###############################################################################################################
 ##########################################    СКАСУВАННЯ    ###################################################
@@ -381,7 +380,7 @@ Login
   Run Keyword And Ignore Error  Click Element  xpath=//*[@id="bid-checkforunlicensed"]/..
   Click Element  xpath=//button[contains(text(), 'Відправити')]
   Wait Until Page Contains Element  xpath=//div[contains(@class,'alert-success')]
-  Run Keyword If  '${MODE}' != 'dgfInsider'  Опублікувати Пропозицію  ${status}
+  Опублікувати Пропозицію  ${status}
 
 Опублікувати Пропозицію
   [Arguments]  ${status}
@@ -408,7 +407,7 @@ Login
   Wait Until Element Is Visible   xpath=//input[contains(@name, '[value][amount]')]
   ConvToStr And Input Text  xpath=//input[contains(@name, '[value][amount]')]  ${fieldvalue}
   Click Element  xpath=//button[contains(text(), 'Відправити')]
-  Wait Until Element Is Visible  xpath=//div[contains(@class,'alert-success')]
+  Wait Until Keyword Succeeds  10 x  1 s  Element Should Be Visible  xpath=//div[contains(@class,'alert-success')]
 
 Завантажити документ в ставку
   [Arguments]  ${username}  ${path}  ${tender_uaid}  ${doc_type}=documents
@@ -418,7 +417,7 @@ Login
   ...  Select From List By Value  xpath=//input[contains(@value,"${path.split("/")[-1].split(".")[0]}")]/ancestor::*[@class="bid_file_wrap"]/descendant::*[@class="select_document_type"]  financialLicense
   ...  ELSE  Select From List By Value  xpath=//input[contains(@value,"${path.split("/")[-1].split(".")[0]}")]/ancestor::*[@class="bid_file_wrap"]/descendant::*[@class="select_document_type"]  commercialProposal
   Click Element  xpath=//button[contains(text(), 'Відправити')]
-  Wait Until Element Is Visible  xpath=//div[contains(@class,'alert-success')]
+  Wait Until Keyword Succeeds  10 x  1 s  Element Should Be Visible  xpath=//div[contains(@class,'alert-success')]
 
 Завантажити фінансову ліцензію
   [Arguments]  ${username}  ${tender_uaid}  ${filepath}
