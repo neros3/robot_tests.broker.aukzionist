@@ -215,6 +215,15 @@ Login
     [Arguments]    ${username}    ${tender_uaid}
     Run keyword    aukzionist.Оновити сторінку з об'єктом МП    ${username}    ${tender_uaid}
 
+Отримати інформацію з активу в договорі
+    [Arguments]    ${username}    ${contract_uaid}    ${item_id}    ${field_name}
+    ${return_value}=    Run Keyword    aukzionist.Отримати інформацію з активу ${item_id} контракту про ${field_name}
+    [Return]    ${return_value}
+
+Отримати інформацію з активу ${item_id} контракту про ${field_name}
+    ${return_value}=    Отримати текст    id=items[${item_id}].${field_name}
+    [Return]    ${return_value}
+
 Отримати інформацію із об'єкта МП
     [Arguments]    ${username}    ${tender_uaid}    ${field_name}
     ${return_value}=    Run Keyword    aukzionist.Отримати інформацію про ${field_name}
@@ -1140,3 +1149,73 @@ aukzionist.Отримати інформацію з пропозиції шод�
     Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${tender_uaid}
     Натиснути    id=bids[1]-link
     Натиснути    id=cancel-bid-btn
+
+Активувати контракт
+    [Arguments]    ${username}    ${contract_uaid}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+
+Отримати інформацію із договору
+    [Arguments]    ${username}    ${contract_uaid}    ${field_name}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    ${return_value}=    Отримати текст    id=contract-${field_name}
+    [Return]    ${return_value}
+
+Вказати дату отримання оплати
+    [Arguments]    ${username}    ${contract_uaid}    ${dateMet}    ${milestone_index}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    Натиснути    id=bids[0]-link
+    Input text    id=milestones-datemet    ${dateMet}
+    Натиснути    id=confirm-milestone-btn
+    Sleep    3
+
+Завантажити наказ про завершення приватизації
+    [Arguments]    ${username}    ${contract_uaid}    ${filepath}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    Натиснути    id=bids[0]-link
+    Select from list by value    id=milestones-type    approvalProtocol
+    Choose file    id=files-file    ${filepath}
+    Натиснути    id=upload-milestone-document-btn
+    Sleep    59
+
+Вказати дату прийняття наказу
+    [Arguments]    ${username}    ${contract_uaid}    ${dateMet}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    Натиснути    id=bids[0]-link
+    Input text    id=milestones-datemet    ${dateMet}
+    Натиснути    id=confirm-milestone-btn
+    Sleep    3
+
+Вказати дату виконання умов контракту
+    [Arguments]    ${username}    ${contract_uaid}    ${dateMet}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    Натиснути    id=bids[0]-link
+    Input text    id=milestones-datemet    ${dateMet}
+    Натиснути    id=confirm-milestone-btn
+    Sleep    3
+
+Підтвердити відсутність оплати
+    [Arguments]    ${username}    ${contract_uaid}    ${milestone_index}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    Натиснути    id=bids[0]-link
+    Натиснути    id=decline-milestone-btn
+    Sleep    3
+
+Підтвердити відсутність наказу про приватизацію
+    [Arguments]    ${username}    ${contract_uaid}    ${filepath}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    Натиснути    id=bids[0]-link
+    Select from list by value    id=milestones-type    rejectionProtocol
+    Choose file    id=files-file    ${filepath}
+    Натиснути    id=upload-milestone-document-btn
+    Sleep    3
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    Натиснути    id=bids[0]-link
+    Натиснути    id=decline-milestone-btn
+    Sleep    3
+
+Підтвердити невиконання умов приватизації
+    [Arguments]    ${username}    ${contract_uaid}
+    Run keyword    aukzionist.Пошук тендера по ідентифікатору    ${username}    ${contract_uaid}
+    Натиснути    id=bids[0]-link
+    Натиснути    id=decline-milestone-btn
+    Sleep    3
