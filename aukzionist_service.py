@@ -1,102 +1,79 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+import pytz
+import dateutil.parser
+import urllib
+import os
 
 from datetime import datetime
-from iso8601 import parse_date
-from pytz import timezone
-import os
-import urllib
+from robot.libraries.BuiltIn import BuiltIn
 
+def get_webdriver():
+   se2lib = BuiltIn().get_library_instance('Selenium2Library')
+   return se2lib._current_browser()
 
-def convert_time(date):
-    date = datetime.strptime(date, "%d/%m/%Y %H:%M:%S")
-    return timezone('Europe/Kiev').localize(date).strftime('%Y-%m-%dT%H:%M:%S.%f%z')
+def is_checked(locator):
+   driver = get_webdriver()
+   return driver.find_element_by_id(locator).is_selected()
 
+def get_str(value):
+   return str(value)
 
-def convert_decision_date(date):
-    date_obj = datetime.strptime(date, "%d/%m/%Y")
-    return date_obj.strftime("%Y-%m-%d")
+def get_budget(initial_tender_data):
+   return str(initial_tender_data.data.value.amount)
 
-def convert_datetime_to_aukzionist_format(isodate):
-    iso_dt = parse_date(isodate)
-    day_string = iso_dt.strftime("%d/%m/%Y %H:%M")
-    return day_string
+def get_step_rate(initial_tender_data):
+   return str(initial_tender_data.data.minimalStep.amount)
 
+def get_quantity(item):
+   return str(item.quantity)
 
-def convert_string_from_dict_aukzionist(string):
-    return {
-        u"грн": u"UAH",
-        u"Голландський аукціон": u"dgfInsider",
-        u"True": u"1",
-        u"False": u"0",
-        u'Класифікація згідно CAV': u'CAV',
-        u'з урахуванням ПДВ': True,
-        u'без урахуванням ПДВ': False,
-        u'очiкування пропозицiй': u'active.tendering',
-        u'перiод уточнень': u'active.enquires',
-        u'аукцiон': u'active.auction',
-        u'квалiфiкацiя переможця': u'active.qualification',
-        u'торги не відбулися': u'unsuccessful',
-        u'продаж завершений': u'complete',
-        u'торги скасовано': u'cancelled',
-        u'торги були відмінені.': u'active',
-        u'Юридична Інформація про Майданчики': u'x_dgfPlatformLegalDetails',
-        u'Презентація': u'x_presentation',
-        u'Договір про нерозголошення (NDA)': u'x_nda',
-        u'Публічний Паспорт Активу': u'x_dgfPublicAssetCertificate',
-        u'Технічні специфікації': u'x_technicalSpecifications',
-        u'Паспорт торгів': u'x_tenderNotice',
-        u'Повідомлення про аукціон': u'notice',
-        u'Ілюстрації': u'illustration',
-        u'Критерії оцінки': u'evaluationCriteria',
-        u'Пояснення до питань заданих учасниками': u'clarifications',
-        u'Інформація про учасників': u'bidders',
-        u'прав вимоги за кредитами': u'dgfFinancialAssets',
-        u'майна банків': u'dgfOtherAssets',
-        u'очікується протокол': u'pending.verification',
-        u'на черзі': u'pending.waiting',
-        u'очікується підписання договору': u'pending.payment',
-        u'оплачено, очікується підписання договору': u'active',
-        u'рiшення скасовано': u'cancelled',
-        u'дискваліфіковано': u'unsuccessful',
-    }.get(string, string)
+def get_tenderAttempts(item):
+   return str(item.tenderAttempts)
 
+def get_tender_dates(initial_tender_data, key):
+   data_period = initial_tender_data.data.auctionPeriod
+   start_dt = dateutil.parser.parse(data_period['startDate'])
+   data = {
+       'StartDate': start_dt.strftime("%d.%m.%Y"),
+       'StartTime': start_dt.strftime("%H:%M"),
+   }
+   return data.get(key, '')
 
-def adapt_procuringEntity(role_name, tender_data):
-    if role_name == 'tender_owner':
-        tender_data['data']['procuringEntity']['name'] = u"Ольмек"
-    return tender_data
+def convert_ISO_DMY(isodate):
+   return dateutil.parser.parse(isodate).strftime("%d.%m.%Y")
 
+def convert_date(isodate):
+   return datetime.strptime(isodate, '%d.%m.%Y').date().isoformat()
 
-def adapt_view_data(value, field_name):
-    if field_name == 'value.amount':
-        value = float(value)
-    elif field_name == 'minimalStep.amount':
-        value = float(value.split(' ')[0])
-    elif field_name == 'tenderAttempts':
-        value = int(value)
-    elif 'quantity' in field_name:
-        value = float(value.split(' ')[0])
-    elif 'questions' in field_name and '.date' in field_name:
-        value = convert_time(value.split(' - ')[0])
-    elif field_name == 'dgfDecisionDate':
-        return convert_decision_date(value.split(" ")[-1])
-    elif field_name == 'dgfDecisionID':
-        value = value.split(" ")[1]
-    elif 'Date' in field_name:
-        value = convert_time(value)
-    return convert_string_from_dict_aukzionist(value)
+def convert_date_to_iso(v_date):
+   full_value = v_date
+   date_obj = datetime.strptime(full_value, "%d.%m.%Y %H:%M")
+   time_zone = pytz.timezone('Europe/Kiev')
+   localized_date = time_zone.localize(date_obj)
+   return localized_date.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
+def convert_date_time_to_iso(v_date_time):
+   date_obj = datetime.strptime(v_date_time, "%d.%m.%Y %H:%M")
+   time_zone = pytz.timezone('Europe/Kiev')
+   localized_date = time_zone.localize(date_obj)
+   return localized_date.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
-def adapt_view_item_data(value, field_name):
-    if 'quantity' in field_name:
-        value = float(value.split(' ')[0])
-    return convert_string_from_dict_aukzionist(value)
+def download_file(url, file_name, output_dir):
+   urllib.urlretrieve(url, ('{}/{}'.format(output_dir, file_name)))
 
+def inc(value):
+   return int(value) + 1
+
+def to_str(value):
+   return str(value)
+
+def to_int(value):
+   return int(value)
 
 def get_upload_file_path():
-    return os.path.join(os.getcwd(), 'src', 'robot_tests.broker.aukzionist', 'testFileForUpload.txt')
+   return os.path.join(os.getcwd(), 'src', 'robot_tests.broker.aukzionist', 'test.txt')
 
-
-def aukzionist_download_file(url, file_name, output_dir):
-    urllib.urlretrieve(url, ('{}/{}'.format(output_dir, file_name)))
+def bid_value(tender_data):
+    if 'value' in tender_data['data']:
+        return  str(tender_data['data']['value']['amount'])
+    return ''
